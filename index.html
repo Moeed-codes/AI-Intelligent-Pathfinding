@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Intelligent Pathfinding &amp; Search Algorithm Visualizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">&#9673;</span>
+        <div>
+          <h1>AI Intelligent Pathfinding &amp; Search Algorithm Visualizer</h1>
+          <p>An educational demonstration of Artificial Intelligence search algorithms on a 2D grid</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge">Uninformed Search</span>
+        <span class="badge">Informed Search</span>
+        <span class="badge">Local Search</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard">
+
+    <!-- ============ LEFT PANEL: GRID ============ -->
+    <section class="grid-panel panel">
+      <div class="panel-head">
+        <h2>State Space Grid</h2>
+        <div class="grid-tools">
+          <label class="field">
+            <span>Grid Size</span>
+            <select id="sizeSelect">
+              <option value="15">Small (15 &times; 15)</option>
+              <option value="25" selected>Medium (25 &times; 20)</option>
+              <option value="40">Large (40 &times; 30)</option>
+            </select>
+          </label>
+          <div class="toolbar" id="toolbar">
+            <button class="tool-btn active" data-tool="brush" title="Draw walls">Brush</button>
+            <button class="tool-btn" data-tool="erase" title="Erase cells">Erase</button>
+            <button class="tool-btn" data-tool="start" title="Place the start node">Start</button>
+            <button class="tool-btn" data-tool="goal" title="Place the goal node">Goal</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-wrap">
+        <div id="grid" class="grid" aria-label="Search grid"></div>
+        <div id="noPathNotice" class="no-path-notice hidden">No path exists between start and goal</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <span class="legend-item"><span class="swatch sw-start"></span> Start (Initial State)</span>
+        <span class="legend-item"><span class="swatch sw-goal"></span> Goal (Goal State)</span>
+        <span class="legend-item"><span class="swatch sw-wall"></span> Obstacle</span>
+        <span class="legend-item"><span class="swatch sw-frontier"></span> Frontier (Search Tree)</span>
+        <span class="legend-item"><span class="swatch sw-explored"></span> Explored</span>
+        <span class="legend-item"><span class="swatch sw-path"></span> Final Path</span>
+      </div>
+    </section>
+
+    <!-- ============ RIGHT PANEL: CONTROLS & STATS ============ -->
+    <aside class="side-panel panel">
+
+      <div class="panel-head">
+        <h2>Search Controls</h2>
+      </div>
+
+      <!-- Algorithm selection -->
+      <div class="field">
+        <label for="algoSelect">Select Algorithm</label>
+        <select id="algoSelect">
+          <optgroup label="Uninformed Search">
+            <option value="bfs">Breadth First Search (BFS)</option>
+            <option value="dfs">Depth First Search (DFS)</option>
+            <option value="ucs">Uniform Cost Search (UCS)</option>
+          </optgroup>
+          <optgroup label="Informed Search">
+            <option value="greedy">Greedy Best First Search</option>
+            <option value="astar" selected>A* Search</option>
+          </optgroup>
+          <optgroup label="Local Search">
+            <option value="hill">Hill Climbing</option>
+            <option value="anneal">Simulated Annealing</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="btn-grid">
+        <button id="btnStart" class="btn btn-primary">&#9654; Start Search</button>
+        <button id="btnReset" class="btn">Reset</button>
+        <button id="btnClear" class="btn">Clear Obstacles</button>
+        <button id="btnMaze" class="btn">Random Maze</button>
+      </div>
+
+      <!-- Animation speed -->
+      <div class="field">
+        <label for="speedSlider">Animation Speed <span id="speedLabel">Medium</span></label>
+        <input type="range" id="speedSlider" min="0" max="10" value="5" />
+        <div class="speed-scale"><span>Slow</span><span>Instant</span></div>
+      </div>
+
+      <!-- Live statistics -->
+      <div class="panel-head">
+        <h2>Live Statistics</h2>
+      </div>
+      <dl class="stats" id="stats">
+        <div class="stat-row"><dt>Algorithm</dt><dd id="statAlgo">&mdash;</dd></div>
+        <div class="stat-row"><dt>Nodes Explored</dt><dd id="statExplored">&mdash;</dd></div>
+        <div class="stat-row"><dt>Path Length</dt><dd id="statLength">&mdash;</dd></div>
+        <div class="stat-row"><dt>Path Cost</dt><dd id="statCost">&mdash;</dd></div>
+        <div class="stat-row"><dt>Execution Time</dt><dd id="statTime">&mdash;</dd></div>
+        <div class="stat-row"><dt>Heuristic h(start)</dt><dd id="statHeuristic">&mdash;</dd></div>
+        <div class="stat-row"><dt>Result</dt><dd id="statResult">&mdash;</dd></div>
+        <div class="stat-row"><dt>Strategy</dt><dd id="statStrategy">&mdash;</dd></div>
+      </dl>
+
+      <div class="formula-box">
+        <p><strong>Heuristic (Manhattan):</strong></p>
+        <p class="formula">h(n) = |x&#8321; &minus; x&#8322;| + |y&#8321; &minus; y&#8322;|</p>
+        <p><strong>A* Evaluation:</strong></p>
+        <p class="formula">f(n) = g(n) + h(n)</p>
+        <p class="muted">g(n) = cost from start to n &nbsp;&bull;&nbsp; h(n) = estimate from n to goal</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ============ COMPARE SECTION ============ -->
+  <section class="compare-section panel">
+    <div class="panel-head compare-head">
+      <h2>Compare Algorithms</h2>
+      <button id="btnCompare" class="btn btn-secondary">Run Comparison on Current Grid</button>
+    </div>
+    <div class="table-scroll">
+      <table id="compareTable" class="compare-table">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Search Type</th>
+            <th>Nodes Explored</th>
+            <th>Path Length</th>
+            <th>Path Cost</th>
+            <th>Execution Time</th>
+            <th>Optimal</th>
+            <th>Path Found</th>
+          </tr>
+        </thead>
+        <tbody id="compareBody">
+          <tr><td colspan="8" class="table-empty">Press &ldquo;Run Comparison on Current Grid&rdquo; to benchmark all 7 algorithms.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ EDUCATIONAL SECTION ============ -->
+  <section class="edu-section panel">
+    <div class="panel-head">
+      <h2>AI Concepts Used</h2>
+    </div>
+
+    <div class="edu-grid">
+
+      <article class="card">
+        <h3>State Space, Initial State &amp; Goal State</h3>
+        <p>Every cell of the grid is a <strong>state</strong>. The whole grid is the <strong>state space</strong> &mdash; the set of all configurations the agent can be in. The <strong>initial state</strong> is the start node (green), the <strong>goal state</strong> is the goal node (red), and <strong>actions / operators</strong> are the four moves (up, down, left, right) that transition between adjacent states.</p>
+      </article>
+
+      <article class="card">
+        <h3>Search Tree &amp; Strategy</h3>
+        <p>Algorithms grow a <strong>search tree</strong> from the initial state: each expanded node branches into its neighbours (children), while the set of nodes waiting to be expanded is the <strong>frontier</strong> (teal in the visualizer). The <strong>search strategy</strong> &mdash; how nodes are ordered in the frontier (stack, queue, or priority queue) &mdash; is exactly what makes BFS, DFS, UCS, Greedy and A* behave differently.</p>
+      </article>
+
+      <article class="card">
+        <h3>Uninformed vs Informed Search</h3>
+        <p><strong>Uninformed (blind) search</strong> &mdash; BFS, DFS, UCS &mdash; uses no information about the goal&rsquo;s location; it explores by structure and cost alone. <strong>Informed (heuristic) search</strong> &mdash; Greedy and A* &mdash; uses a <strong>heuristic function</strong> h(n) that estimates the remaining distance to the goal, guiding the search toward it.</p>
+      </article>
+
+      <article class="card">
+        <h3>Breadth First Search (BFS)</h3>
+        <p>Expands the frontier with a <strong>FIFO queue</strong>, exploring all nodes at depth d before depth d+1. It always finds the <strong>shallowest</strong> path, so with uniform step costs it is <em>optimal</em>. Cost: O(b&#x1D57;) time and space.</p>
+      </article>
+
+      <article class="card">
+        <h3>Depth First Search (DFS)</h3>
+        <p>Expands the frontier with a <strong>LIFO stack</strong>, diving deep down one branch before <strong>backtracking</strong>. It is memory-friendly but <em>not optimal</em> &mdash; it may find a long winding path. The parent-pointers we store are what allow reconstruction of the final path after backtracking.</p>
+      </article>
+
+      <article class="card">
+        <h3>Uniform Cost Search (UCS)</h3>
+        <p>Expands nodes by increasing <strong>path cost g(n)</strong> using a priority queue. It generalises BFS to weighted edges and is <em>optimal</em>. With equal edge costs it behaves like BFS but explores by accumulated cost rather than depth.</p>
+      </article>
+
+      <article class="card">
+        <h3>Greedy Best First Search</h3>
+        <p>Expands the node with the smallest <strong>evaluation function</strong></p>
+        <p class="formula">f(n) = h(n)</p>
+        <p>It races toward the goal using only the heuristic, so it is fast but <strong>not optimal</strong> &mdash; it can be fooled by an obstacle that forces a detour.</p>
+      </article>
+
+      <article class="card">
+        <h3>A* Search</h3>
+        <p>Combines the best of UCS and Greedy with the <strong>evaluation function</strong></p>
+        <p class="formula">f(n) = g(n) + h(n)</p>
+        <p>where <strong>g(n)</strong> = actual cost from the start to n and <strong>h(n)</strong> = heuristic estimate from n to the goal. Because Manhattan distance never overestimates (it is <em>admissible</em>), A* is <strong>optimal and complete</strong>, and it is the most efficient optimal informed search.</p>
+      </article>
+
+      <article class="card">
+        <h3>Hill Climbing (Local Search)</h3>
+        <p>A <strong>local search</strong>: it starts at the initial state and repeatedly moves to the neighbour with the best heuristic value, keeping no history &mdash; no open list, no backtracking. It can reach the <strong>global optimum</strong> (the goal, h = 0), but it frequently gets stuck at a <strong>local optimum</strong>: a state whose neighbours are all worse (or equal), even though the goal lies elsewhere. Because it never reconsiders rejected states, it cannot escape &mdash; try it on a grid with a long wall!</p>
+      </article>
+
+      <article class="card">
+        <h3>Simulated Annealing (Local Search)</h3>
+        <p>Inspired by metallurgy, it adds randomness to escape local optima. A <strong>temperature</strong> T starts high and cools over time. At each step it samples a random neighbour and computes &#916; = h(next) &minus; h(current). Better neighbours (&#916; &lt; 0) are always accepted; worse ones are accepted with probability</p>
+        <p class="formula">P(accept) = e<sup>&minus;&#916;/T</sup></p>
+        <p>High temperature accepts most moves (exploration); low temperature behaves like hill climbing (exploitation). It may find the goal but is <em>not guaranteed</em> &mdash; the visualizer tracks the best state visited.</p>
+      </article>
+
+      <article class="card">
+        <h3>Evaluation Function</h3>
+        <p>Every best-first algorithm ranks frontier nodes with an <strong>evaluation function</strong> f(n). UCS uses f = g(n), Greedy uses f = h(n), and A* uses f = g(n) + h(n). The choice of f is the entire difference between these algorithms.</p>
+      </article>
+
+      <article class="card">
+        <h3>Backtracking &amp; Path Cost</h3>
+        <p><strong>Backtracking</strong> is how tree/graph searches recover the solution: once the goal is expanded, we walk parent pointers back to the start to reconstruct the <strong>final path</strong>. The <strong>path cost</strong> is the sum of edge costs along that path &mdash; here 1 per move, so it equals the path length. Compare BFS/A* (optimal cost) against DFS/Greedy (often higher).</p>
+      </article>
+
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>AI Intelligent Pathfinding &amp; Search Algorithm Visualizer &mdash; Artificial Intelligence (University Project) &mdash; Hand-coded in pure HTML, CSS &amp; JavaScript.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
