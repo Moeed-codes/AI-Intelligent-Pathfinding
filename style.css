@@ -21,6 +21,7 @@
   --color-start: #22c55e;
   --color-goal: #ef4444;
   --color-wall: #2a3552;
+  --color-traffic: #f97316;
   --color-wall-text: #46547a;
   --color-frontier: #14b8a6;
   --color-explored: #3b82f6;
@@ -228,6 +229,15 @@ body {
   );
 }
 
+.cell.traffic {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(249, 115, 22, 0.2) 0 4px,
+    rgba(249, 115, 22, 0.4) 4px 8px
+  );
+  border: 1px solid rgba(249, 115, 22, 0.5);
+}
+
 .cell.frontier {
   background: var(--color-frontier);
   box-shadow: 0 0 8px rgba(20, 184, 166, 0.6);
@@ -300,6 +310,7 @@ body {
 .sw-start { background: var(--color-start); }
 .sw-goal { background: var(--color-goal); }
 .sw-wall { background: var(--color-wall); border: 1px solid var(--border); }
+.sw-traffic { background: var(--color-traffic); border: 1px solid var(--border); }
 .sw-frontier { background: var(--color-frontier); }
 .sw-explored { background: var(--color-explored); }
 .sw-path { background: var(--color-path); }
